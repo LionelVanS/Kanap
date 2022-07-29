@@ -56,8 +56,7 @@ function createArticle(imageUrl, altTxt, name, description){
 
 // Création du squelette HTML
 function createStructureHtml(anchor, article){ 
-    const items = document.getElementById("items")
-    items
-        .appendChild(anchor)
-        .appendChild(article)
+   document.getElementById("items")
+   .appendChild(anchor)
+   .appendChild(article)
 }
