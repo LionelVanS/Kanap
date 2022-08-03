@@ -1,4 +1,3 @@
-// Récupération du nombre d'article ajouté au panier
 numberOfProduct = localStorage.length
 const showProduct = []
 let pDelete
@@ -106,9 +105,38 @@ function showCart(product){
     divSettings.appendChild(divDelete)
     divDelete.appendChild(pDelete)
     
-    return pDelete
+    totalQuantityCart(showProduct)
+    totalPriceCart(showProduct)
 }
 
+
+// QUANTITE TOTAL
+function totalQuantityCart(showProduct){
+    let total = 0;
+    
+    showProduct.forEach(product => {
+        const totalUnitQuantity = parseFloat(product.quantity)
+        total += totalUnitQuantity 
+    })
+
+    document.querySelector("#totalQuantity").textContent = total
+}
+
+// PRIX TOTAL
+
+function totalPriceCart(showProduct){
+    let totalPrice = 0;
+    
+    showProduct.forEach(product => {
+        const totalUnitPrice = product.unitPrice * product.quantity    
+        totalPrice += totalUnitPrice
+    })
+    
+    document.querySelector("#totalPrice").textContent = totalPrice
+}
+
+
+// // Suppression d'un article
 // pDelete.addEventListener("click", deleteArticle )
 
 // function deleteArticle(){
@@ -119,3 +147,31 @@ function showCart(product){
 //         showProduct.splice(showProduct[i].product)
 //     }
 // }
+
+
+// FORMULAIRE //
+
+// const firstName = document.querySelector("#firstName")
+// const error = document.querySelector("#firstNameErrorMsg")
+
+// firstName.addEventListener("submit", (e) => {
+    //     if(! ){
+        //         error.textContent = "Veuillez saisir un prénom correct"
+        //         e.preventDefault
+        //     }
+        // })
+        
+        
+        
+// form.addEventListener("submit", function (event) {
+//     // Chaque fois que l'utilisateur tente d'envoyer les données
+//     // on vérifie que le champ email est valide.
+//     if (!email.validity.valid) {
+  
+//       // S'il est invalide, on affiche un message d'erreur personnalisé
+//       error.innerHTML = "J'attends une adresse e-mail correcte, mon cher&nbsp;!";
+//       error.className = "error active";
+//       // Et on empêche l'envoi des données du formulaire
+//       event.preventDefault();
+//     }
+//   }, false);
