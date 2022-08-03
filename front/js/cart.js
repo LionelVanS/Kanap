@@ -1,6 +1,6 @@
 numberOfProduct = localStorage.length
 const showProduct = []
-let pDelete
+// let pDelete
 
 // Récupération des informations des articles ajoutés au panier
 for(let i=0; i < numberOfProduct ;i++){
@@ -10,7 +10,6 @@ for(let i=0; i < numberOfProduct ;i++){
         quantity: productFromStorage.quantity,
         color: productFromStorage.color,
         id: productFromStorage.id,
-        name: productFromStorage.name
     }
     
     // Récupération des données de l'API
@@ -21,13 +20,17 @@ for(let i=0; i < numberOfProduct ;i++){
         product.image = data.imageUrl,
         product.altTxt = data.altTxt,
         product.unitPrice = data.price
+        product.name = data.name
         
         showProduct.push(product)
         
         showCart(product)
+        totalQuantityCart(showProduct)
+        totalPriceCart(showProduct)
     })
 }
 
+// Création de l'affichage de l'article ajouté
 function showCart(product){
     
     // Création de l'article classe cart__item
@@ -74,11 +77,14 @@ function showCart(product){
     // Création de l'input    
     const inputQuantity = document.createElement("input")
     inputQuantity.classList.add("itemQuantity")
-    inputQuantity.type = "number"
-    inputQuantity.name = "itemQuantity"
-    inputQuantity.min = 1
-    inputQuantity.max = 100
-    inputQuantity.value = product.quantity
+    inputQuantity.setAttribute("type", "number") 
+    inputQuantity.setAttribute("name", "itemQuantity")
+    inputQuantity.setAttribute("min", 1)
+    inputQuantity.setAttribute("max", 100)
+    inputQuantity.setAttribute("value", product.quantity)
+    
+    // Ecoute des modifications sur la quantité d'un article
+    inputQuantity.addEventListener("input",() => changeTotalPriceQuantity(product.id, inputQuantity.value, product.color))
     
     // Création de la div classe cart__item__content__settings__delete
     const divDelete = document.createElement("div")
@@ -89,55 +95,71 @@ function showCart(product){
     pDelete.classList.add("deleteItem")
     pDelete.textContent = "Supprimer"
     
+    // Ecoute du bouton "SUPPRIMER"
+    // pDelete.addEventListener("click", deleteArticle )
+    
+    // Assemblage de la structure HTML
     const sectionCartItems = document.querySelector("#cart__items")
     sectionCartItems.appendChild(articleCartItem)
+    
     articleCartItem.appendChild(divImg)
-    articleCartItem.appendChild(divContent)
     divImg.appendChild(image)
+    
+    articleCartItem.appendChild(divContent)
     divContent.appendChild(divDescription)
     divContent.appendChild(divSettings)
+    
     divDescription.appendChild(h2)
     divDescription.appendChild(pColor)
     divDescription.appendChild(pPrice)
+    
     divSettings.appendChild(divQuantity)
     divQuantity.appendChild(pQuantity)
     divQuantity.appendChild(inputQuantity)
     divSettings.appendChild(divDelete)
-    divDelete.appendChild(pDelete)
     
-    totalQuantityCart(showProduct)
-    totalPriceCart(showProduct)
+    divDelete.appendChild(pDelete)
 }
 
 
-// QUANTITE TOTAL
-function totalQuantityCart(showProduct){
+// CALCUL DU TOTAL D'ARTICLE
+function totalQuantityCart(){
     let total = 0;
     
     showProduct.forEach(product => {
         const totalUnitQuantity = parseFloat(product.quantity)
         total += totalUnitQuantity 
     })
-
     document.querySelector("#totalQuantity").textContent = total
 }
 
-// PRIX TOTAL
+// CALCUL DU PRIX TOTAL
 
-function totalPriceCart(showProduct){
+function totalPriceCart(){
     let totalPrice = 0;
     
     showProduct.forEach(product => {
         const totalUnitPrice = product.unitPrice * product.quantity    
         totalPrice += totalUnitPrice
     })
-    
     document.querySelector("#totalPrice").textContent = totalPrice
 }
 
+// Modification des totaux d'articles et du prix
+function changeTotalPriceQuantity(id, newValue, color){
+    const productToChange = showProduct.find((product) => product.id === id && product.color === color)
+    productToChange.quantity = Number(newValue)
+    totalQuantityCart()
+    totalPriceCart()
+    newData(productToChange)
+}
 
-// // Suppression d'un article
-// pDelete.addEventListener("click", deleteArticle )
+// Modification du localStorage avec les nouvelles quantités
+function newData(productToChange){
+    const keys = `${productToChange.id}:${productToChange.color}`
+    const newDataToSave = JSON.stringify(productToChange)
+    localStorage.setItem(keys, newDataToSave)    
+}
 
 // function deleteArticle(){
 //     for(let i=0; i < showProduct.length; i++){
