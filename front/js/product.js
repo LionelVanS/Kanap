@@ -1,16 +1,23 @@
-// AFFICHAGE DE LA FICHE PRODUIT
+// RECUPERATION DES DONNEES DE LA PAGE D'ACCUEIL
 
 //Récupération des données de l'API
 fetch("http://localhost:3000/api/products/")
 .then((res) => res.json())
-.then((data) => recuperatePrice(data))
+.then((data) => getData(data))
+.catch((e) => {
+    window.alert("Il semblerait qu'il y ait un probleme")
+})
 
+// Message d'erreur
+function errorMessage(e){
+
+}
 // Récupération de l'id du produit sélectionné
 const url = new URLSearchParams(window.location.search)
 const currentId = url.get("id")
 
 // Récupération des informations du produit sélectionné
-function recuperatePrice(data){
+function getData(data){
 
     for(let i = 0; i < data.length; i++){
         let id = data[i]._id
@@ -33,6 +40,8 @@ function recuperatePrice(data){
         } 
     }
 }
+
+// AFFICHAGE DE LA FICHE PRODUIT
 
 // Création de l'image
 function createImage (imageUrl, altTxt){
@@ -87,19 +96,28 @@ function addParams(){
         id : currentId,
         color : document.querySelector("#colors").value,
         quantity : document.querySelector("#quantity").value,
-        name : document.querySelector("h1").textContent
     }
-
-    saveParams(params)
+    const keys = `${params.id}:${params.color}`
+    saveParams(params, keys)
 }
 
+// Vérification de l'existence de l'article au panier
 // Sauvegarde dans le localStorage
-//Redirection au panier ou à la page index
-function saveParams(params){
+function saveParams(params, keys){    
+    let dataFromStorage = JSON.parse(localStorage.getItem(keys))
     if(params.color != "" && params.quantity > 0){
-        localStorage.setItem(currentId, JSON.stringify(params))
         window.location.href = "./cart.html"
+        if(dataFromStorage != null && keys === `${dataFromStorage.id}:${dataFromStorage.color}`){
+            let dataFromStorageNumber = parseInt(dataFromStorage.quantity, 10)
+            let paramsQuantity = parseInt(params.quantity, 10)
+            dataFromStorageNumber += paramsQuantity
+            dataFromStorage.quantity = dataFromStorageNumber
+            localStorage.setItem(keys, JSON.stringify(dataFromStorage))
+        } else {
+            localStorage.setItem(keys, JSON.stringify(params))
+        }
     } else {
         window.alert("Veuillez renseigner une couleur et une quantité.")
     }
 }
+
