@@ -1,4 +1,5 @@
 const showProduct = []
+
 // Récupération des informations des articles ajoutés au panier
 function getData(){
     numberOfProduct = localStorage.length
@@ -27,7 +28,6 @@ function getData(){
         
         totalQuantityCart(showProduct)
         totalPriceCart(showProduct)
-        
     })
 }
 }
@@ -106,9 +106,11 @@ function createDivSettings(product, divContent){
     divSettings.classList.add("cart__item__content__settings")
     
     createDivQuantity(product, divSettings)
-    // createDeleteButton(product, divSettings, keys)
+    createDeleteButton(product, divSettings)
     
     divContent.appendChild(divSettings)
+
+    return divSettings
 }
 
 // Création de la div class cart__item__content__settings__quantity
@@ -151,7 +153,7 @@ function createInputQuantity (product, divQuantity){
 }
 
 // Création de la div classe cart__item__content__settings__delete
-function createDeleteButton(product, divSettings, keys){
+function createDeleteButton(product, divSettings){
     const divDelete = document.createElement("div")
     divDelete.classList.add("cart__item__content__settings__delete")
     
@@ -162,8 +164,8 @@ function createDeleteButton(product, divSettings, keys){
     divSettings.appendChild(divDelete)
     divDelete.appendChild(pDelete)
     
-    // const keys = `${productToChange.id}:${productToChange.color}`
-    pDelete.addEventListener("click",() => deleteArticle(product, keys) )
+    // keys = `${productToChange.id}:${productToChange.color}`
+    pDelete.addEventListener("click",() => deleteArticle(product) )
 }
 
 // Calcul du total d'article
@@ -211,16 +213,26 @@ function newData(productToChange){
     localStorage.setItem(keys, newDataToSave)    
 }
 
-// removeItem(clé)  pour supprimer une ligne dans le local storage
 // Suppression d'un article
-function deleteArticle(product, keys){
-    const productToDelete = showProduct.findIndex((productToDelete) => productToDelete.id === product.id && productToDelete.color === product.color)
+function deleteArticle(product){
+    const id = product.id
+    const color = product.color
+    const productToDelete = showProduct.findIndex((productToDelete) => productToDelete.id === id && productToDelete.color === color)
+
     showProduct.splice(productToDelete, 1)
-    console.log('showProduct :>> ', showProduct);
     
-    localStorage.removeItem(keys)
-    
-    
+    const key = `${id}:${color}`
+    localStorage.removeItem(key)
+
+    deleteArticleFromDocument(id, color)
+}
+
+function deleteArticleFromDocument(id, color){
+    const articleToDelete = document.querySelector(`article[data-id="${id}"][data-color="${color}"]`)
+    articleToDelete.remove()
+
+    totalQuantityCart()
+    totalPriceCart(showProduct)
 }
 
 // FORMULAIRE //
