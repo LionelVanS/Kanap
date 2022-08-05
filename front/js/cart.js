@@ -1,22 +1,21 @@
-numberOfProduct = localStorage.length
 const showProduct = []
-// let pDelete
-
 // Récupération des informations des articles ajoutés au panier
-for(let i=0; i < numberOfProduct ;i++){
-    // Récupération des données du local storage
-    productFromStorage = JSON.parse(localStorage.getItem(localStorage.key(i)))
-    const product = {
-        quantity: productFromStorage.quantity,
-        color: productFromStorage.color,
-        id: productFromStorage.id,
-    }
-    
-    // Récupération des données de l'API
-    fetch(`http://localhost:3000/api/products/${productFromStorage.id}`)
-    .then((res) => res.json())
-    .then((data) => {
+function getData(){
+    numberOfProduct = localStorage.length
+    for(let i=0; i < numberOfProduct ;i++){
+        // Récupération des données du local storage
+        productFromStorage = JSON.parse(localStorage.getItem(localStorage.key(i)))
+        const product = {
+            quantity: productFromStorage.quantity,
+            color: productFromStorage.color,
+            id: productFromStorage.id,
+        }
         
+        // Récupération des données de l'API
+        fetch(`http://localhost:3000/api/products/${productFromStorage.id}`)
+        .then((res) => res.json())
+        .then((data) => {
+            
         product.image = data.imageUrl,
         product.altTxt = data.altTxt,
         product.unitPrice = data.price
@@ -24,57 +23,117 @@ for(let i=0; i < numberOfProduct ;i++){
         
         showProduct.push(product)
         
-        showCart(product)
+        createArticle(product)
+        
         totalQuantityCart(showProduct)
         totalPriceCart(showProduct)
+        
     })
 }
+}
 
-// Création de l'affichage de l'article ajouté
-function showCart(product){
-    
-    // Création de l'article classe cart__item
+// Création de l'article classe cart__item
+function createArticle(product){
     const articleCartItem = document.createElement("article")
     articleCartItem.classList.add("cart__item")
-    articleCartItem.setAttribute("data-id", product.id )
-    articleCartItem.setAttribute("data-color", product.color )
+    articleCartItem.setAttribute("data-id", product.id)
+    articleCartItem.setAttribute("data-color", product.color)
     
-    // Création de la div classe cart__item__img
-    divImg = document.createElement("div")
+    const sectionCartItems = document.querySelector("#cart__items")
+    
+    createDivImg(product, articleCartItem)
+    createDivContent(product, articleCartItem)
+    
+    sectionCartItems.appendChild(articleCartItem)
+    
+    return articleCartItem
+}
+
+// Création de la div classe cart__item__img 
+// et de l'image du produit
+function createDivImg(product, articleCartItem){
+    const divImg = document.createElement("div")
     divImg.classList.add("cart__item__img")
     
-    // Création de l'image
     const image = document.createElement("img")
     image.src = product.image
     image.alt = product.altTxt
     
-    // Création de la div classe cart__item__content__description
-    const divDescription = document.createElement("div")
-    divDescription.classList.add("cart__item__content__description")
-    const h2 = document.createElement("h2")
-    h2.textContent = product.name
-    const pPrice = document.createElement("p")
-    pPrice.textContent = product.unitPrice
-    const pColor = document.createElement("p")
-    pColor.textContent = product.color
-    
-    // Création de la div classe cart__item__content
+    articleCartItem.appendChild(divImg)
+    divImg.appendChild(image)
+}
+
+// Création de la div classe cart__item__content
+function createDivContent(product, articleCartItem){
     const divContent = document.createElement("div")
     divContent.classList.add("cart__item__content")
     
-    // Création de la div class cart__item__content__settings
+    createDivDescription(product, divContent)
+    createDivSettings(product, divContent)
+    
+    articleCartItem.appendChild(divContent)
+    
+    return divContent
+}
+
+// Création de la div classe cart__item__content__description
+// et des éléments interieur (h2 et p)
+function createDivDescription(product, divContent){
+    const divDescription = document.createElement("div")
+    divDescription.classList.add("cart__item__content__description")
+    
+    const h2 = document.createElement("h2")
+    h2.textContent = product.name
+    
+    const pPrice = document.createElement("p")
+    pPrice.textContent = product.unitPrice + " €"
+    
+    const pColor = document.createElement("p")
+    pColor.textContent = product.color
+    
+    divContent.appendChild(divDescription)
+    
+    divDescription.appendChild(h2)
+    divDescription.appendChild(pColor)
+    divDescription.appendChild(pPrice)
+    
+    return divDescription
+}    
+
+//Creation de la div classe cart__item__content__settings
+function createDivSettings(product, divContent){
     const divSettings = document.createElement("div")
     divSettings.classList.add("cart__item__content__settings")
     
-    // Création de la div class cart__item__content__settings__quantity
+    createDivQuantity(product, divSettings)
+    // createDeleteButton(product, divSettings, keys)
+    
+    divContent.appendChild(divSettings)
+}
+
+// Création de la div class cart__item__content__settings__quantity
+function createDivQuantity(product, divSettings){
     const divQuantity = document.createElement("div")
     divQuantity.classList.add("cart__item__content__settings__quantity")
     
-    // Création de l'affichage du prix unitaire
+    createPQuantity(divQuantity)
+    createInputQuantity (product, divQuantity)
+    
+    divSettings.appendChild(divQuantity)
+    
+    return divQuantity
+}
+
+// Création du paragraphe quantité
+function createPQuantity(divQuantity){
     const pQuantity = document.createElement("p")
     pQuantity.textContent = "Quantité :"
     
-    // Création de l'input    
+    divQuantity.appendChild(pQuantity)
+}  
+
+// Création de l'input    
+function createInputQuantity (product, divQuantity){
     const inputQuantity = document.createElement("input")
     inputQuantity.classList.add("itemQuantity")
     inputQuantity.setAttribute("type", "number") 
@@ -83,46 +142,31 @@ function showCart(product){
     inputQuantity.setAttribute("max", 100)
     inputQuantity.setAttribute("value", product.quantity)
     
-    // Ecoute des modifications sur la quantité d'un article
-    inputQuantity.addEventListener("input",() => changeTotalPriceQuantity(product.id, inputQuantity.value, product.color))
+    divQuantity.appendChild(inputQuantity)
     
-    // Création de la div classe cart__item__content__settings__delete
+    // Ecoute des modifications sur la quantité d'un article
+    inputQuantity.addEventListener("input",() => changeTotalPriceQuantity(product.id, inputQuantity.value, product.color, product.unitPrice))
+    
+    return inputQuantity
+}
+
+// Création de la div classe cart__item__content__settings__delete
+function createDeleteButton(product, divSettings, keys){
     const divDelete = document.createElement("div")
     divDelete.classList.add("cart__item__content__settings__delete")
     
-    // Création du texte de suppression du produit
     pDelete = document.createElement("p")
     pDelete.classList.add("deleteItem")
     pDelete.textContent = "Supprimer"
     
-    // Ecoute du bouton "SUPPRIMER"
-    // pDelete.addEventListener("click", deleteArticle )
-    
-    // Assemblage de la structure HTML
-    const sectionCartItems = document.querySelector("#cart__items")
-    sectionCartItems.appendChild(articleCartItem)
-    
-    articleCartItem.appendChild(divImg)
-    divImg.appendChild(image)
-    
-    articleCartItem.appendChild(divContent)
-    divContent.appendChild(divDescription)
-    divContent.appendChild(divSettings)
-    
-    divDescription.appendChild(h2)
-    divDescription.appendChild(pColor)
-    divDescription.appendChild(pPrice)
-    
-    divSettings.appendChild(divQuantity)
-    divQuantity.appendChild(pQuantity)
-    divQuantity.appendChild(inputQuantity)
     divSettings.appendChild(divDelete)
-    
     divDelete.appendChild(pDelete)
+    
+    // const keys = `${productToChange.id}:${productToChange.color}`
+    pDelete.addEventListener("click",() => deleteArticle(product, keys) )
 }
 
-
-// CALCUL DU TOTAL D'ARTICLE
+// Calcul du total d'article
 function totalQuantityCart(){
     let total = 0;
     
@@ -130,28 +174,34 @@ function totalQuantityCart(){
         const totalUnitQuantity = parseFloat(product.quantity)
         total += totalUnitQuantity 
     })
+    
     document.querySelector("#totalQuantity").textContent = total
 }
 
-// CALCUL DU PRIX TOTAL
-
-function totalPriceCart(){
+// Calcul du prix total
+function totalPriceCart(showProduct){
     let totalPrice = 0;
     
     showProduct.forEach(product => {
-        const totalUnitPrice = product.unitPrice * product.quantity    
+        const totalUnitPrice = product.unitPrice * product.quantity
         totalPrice += totalUnitPrice
-    })
+    }) 
+   
     document.querySelector("#totalPrice").textContent = totalPrice
+
+    return totalPrice
 }
 
+
 // Modification des totaux d'articles et du prix
-function changeTotalPriceQuantity(id, newValue, color){
+function changeTotalPriceQuantity(id, newValue, color, unitPrice){
     const productToChange = showProduct.find((product) => product.id === id && product.color === color)
     productToChange.quantity = Number(newValue)
-    totalQuantityCart()
-    totalPriceCart()
+    productToChange.unitPrice = unitPrice
+    
     newData(productToChange)
+    totalQuantityCart()
+    totalPriceCart(showProduct)
 }
 
 // Modification du localStorage avec les nouvelles quantités
@@ -161,39 +211,128 @@ function newData(productToChange){
     localStorage.setItem(keys, newDataToSave)    
 }
 
-// function deleteArticle(){
-//     for(let i=0; i < showProduct.length; i++){
-//         let deleteProduct = showProduct[i]
-        
-//         console.log('showProduct[i] :>> ', showProduct[i]);
-//         showProduct.splice(showProduct[i].product)
-//     }
-// }
-
+// removeItem(clé)  pour supprimer une ligne dans le local storage
+// Suppression d'un article
+function deleteArticle(product, keys){
+    const productToDelete = showProduct.findIndex((productToDelete) => productToDelete.id === product.id && productToDelete.color === product.color)
+    showProduct.splice(productToDelete, 1)
+    console.log('showProduct :>> ', showProduct);
+    
+    localStorage.removeItem(keys)
+    
+    
+}
 
 // FORMULAIRE //
 
-// const firstName = document.querySelector("#firstName")
-// const error = document.querySelector("#firstNameErrorMsg")
+// Vérification de l'input du prénom
+const firstName = document.querySelector("#firstName")
+firstName.addEventListener("input", (e) => {
+    const error = document.querySelector("#firstNameErrorMsg")
+    if(firstName.value.length == 0){
+        error.textContent = "Veuillez saisir un prénom"
+    } else if (firstName.value.length <3){
+        error.textContent = "Veuillez saisir un prénom de plus de 3 lettres"
+    } else if(allLetter(firstName)){
+        error.textContent = " "
+    } else {
+        error.textContent = "Le champ ne peut contenir que des lettres et des espaces"
+    }
+})
 
-// firstName.addEventListener("submit", (e) => {
-    //     if(! ){
-        //         error.textContent = "Veuillez saisir un prénom correct"
-        //         e.preventDefault
-        //     }
-        // })
-        
-        
-        
-// form.addEventListener("submit", function (event) {
-//     // Chaque fois que l'utilisateur tente d'envoyer les données
-//     // on vérifie que le champ email est valide.
-//     if (!email.validity.valid) {
-  
-//       // S'il est invalide, on affiche un message d'erreur personnalisé
-//       error.innerHTML = "J'attends une adresse e-mail correcte, mon cher&nbsp;!";
-//       error.className = "error active";
-//       // Et on empêche l'envoi des données du formulaire
-//       event.preventDefault();
-//     }
-//   }, false);
+// Vérification de l'input du nom
+const lastName = document.querySelector("#lastName")
+lastName.addEventListener("input", (e) => {
+    const error = document.querySelector("#lastNameErrorMsg")
+    if(lastName.value.length == 0){
+        error.textContent = "Veuillez saisir un nom"
+    } else if(allLetter(lastName)){
+        error.textContent = " "
+    } else {
+        error.textContent = "Le champ ne peut contenir que des lettres et des espaces"
+    }
+})
+
+// Vérification de l'input de l'adresse
+const address = document.querySelector("#address")
+address.addEventListener("input", (e) => {
+    const error = document.querySelector("#addressErrorMsg")
+    if(address.value.length < 10){
+        error.textContent = "Veuillez saisir une adresse correcte"
+    } else if(lettersAndNumbers(address)) {
+        error.textContent = " "
+    } else {
+        error.textContent = "Le champ ne peut contenir que des lettres, des chiffres et des espaces"
+    }
+})
+
+// Vérification de l'input de la ville
+const city = document.querySelector("#city")
+city.addEventListener("input", (e) => {
+    const error = document.querySelector("#cityErrorMsg")
+    if(city.value.length == 0){
+        error.textContent = "Veuillez saisir une ville"
+    } else if(allLetter(city)){
+        error.textContent = " "
+    } else {
+        error.textContent = "Le champ ne peut contenir que des lettres et des espaces"
+    }
+})
+
+// Vérification de l'input de l'email
+const email = document.querySelector("#email")
+email.addEventListener("input", (e) => {
+    const error = document.querySelector("#emailErrorMsg")
+    if(email.value.length == 0){
+        error.textContent = "Veuillez saisir une adresse mail"
+    } else if(addressMail(email)){
+        error.textContent = " "
+    } else {
+        error.textContent = "Ceci n'est pas une adresse mail valide"
+    }
+})
+
+// Fonction pour vérifier si l'input ne comporte que des lettres (espaces autorisés)
+function allLetter(inputtxt){ 
+    const letters = /^[a-zA-Z ]+$/
+    if(inputtxt.value.match(letters)){
+        return true
+    } else {
+        return false
+    }
+}
+
+// Fonction pour vérifier si l'input ne comporte que des lettres et des chiffres (espaces autorisés)
+function lettersAndNumbers(inputtxt){
+    const numbersAndLetters = /^[0-9]* ([a-zA-Z, ]*)/
+    if(inputtxt.value.match(numbersAndLetters)){
+        return true
+    } else {
+        return false
+    }
+}
+
+function addressMail(inputTxt){
+    const addressMail = /^[0-9a-z._-]+@{1}[0-9a-z.-]{2,}[.]{1}[a-z]{2,5}$/
+    if(inputTxt.value.match(addressMail)){
+        return true
+    } else {
+        return false
+    }
+}
+
+// BOUTON COMMANDER !
+
+// Récupération et écoute du bouton
+// function getButton(){
+//     const orderButton = document.querySelector("#order")
+//     orderButton.addEventListener("click", verificationOfCart)
+// }
+
+// function verificationOfCart(){
+
+// }
+
+
+// getButton()
+getData()
