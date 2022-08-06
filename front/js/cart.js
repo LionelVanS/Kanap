@@ -1,37 +1,40 @@
 const showProduct = []
 
-// Récupération des informations des articles ajoutés au panier
-function getData(){
-    numberOfProduct = localStorage.length
+// Récupération des données du local storage
+function getDataFromStorage(){
+    const numberOfProduct = localStorage.length
     for(let i=0; i < numberOfProduct ;i++){
-        // Récupération des données du local storage
-        productFromStorage = JSON.parse(localStorage.getItem(localStorage.key(i)))
+        const productFromStorage = JSON.parse(localStorage.getItem(localStorage.key(i)))
         const product = {
             quantity: productFromStorage.quantity,
             color: productFromStorage.color,
             id: productFromStorage.id,
         }
-        
-        // Récupération des données de l'API
-        fetch(`http://localhost:3000/api/products/${productFromStorage.id}`)
-        .then((res) => res.json())
-        .then((data) => {
-            
-        product.image = data.imageUrl,
-        product.altTxt = data.altTxt,
-        product.unitPrice = data.price
-        product.name = data.name
-        
-        showProduct.push(product)
-        
-        createArticle(product)
-        
-        totalQuantityCart(showProduct)
-        totalPriceCart(showProduct)
-    })
-}
+        getDataFromAPI(product, productFromStorage)
+    }
+
 }
 
+// Récupération des données de l'API
+function getDataFromAPI(product, productFromStorage){
+    fetch(`http://localhost:3000/api/products/${productFromStorage.id}`)
+    .then((res) => res.json())
+    .then((data) => {
+        
+    product.image = data.imageUrl,
+    product.altTxt = data.altTxt,
+    product.unitPrice = data.price
+    product.name = data.name
+    
+    showProduct.push(product)
+    
+    createArticle(product)
+    
+    totalQuantityCart(showProduct)
+    totalPriceCart(showProduct)
+    
+    })
+}
 // Création de l'article classe cart__item
 function createArticle(product){
     const articleCartItem = document.createElement("article")
@@ -218,19 +221,19 @@ function deleteArticle(product){
     const id = product.id
     const color = product.color
     const productToDelete = showProduct.findIndex((productToDelete) => productToDelete.id === id && productToDelete.color === color)
-
+    
     showProduct.splice(productToDelete, 1)
     
     const key = `${id}:${color}`
     localStorage.removeItem(key)
-
+    
     deleteArticleFromDocument(id, color)
 }
 
 function deleteArticleFromDocument(id, color){
     const articleToDelete = document.querySelector(`article[data-id="${id}"][data-color="${color}"]`)
     articleToDelete.remove()
-
+    
     totalQuantityCart()
     totalPriceCart(showProduct)
 }
@@ -243,7 +246,7 @@ firstName.addEventListener("input", (e) => {
     const error = document.querySelector("#firstNameErrorMsg")
     if(firstName.value.length == 0){
         error.textContent = "Veuillez saisir un prénom"
-    } else if (firstName.value.length <3){
+    } else if (firstName.value.length < 3){
         error.textContent = "Veuillez saisir un prénom de plus de 3 lettres"
     } else if(allLetter(firstName)){
         error.textContent = " "
@@ -254,7 +257,7 @@ firstName.addEventListener("input", (e) => {
 
 // Vérification de l'input du nom
 const lastName = document.querySelector("#lastName")
-lastName.addEventListener("input", (e) => {
+lastName.addEventListener("input", () => {
     const error = document.querySelector("#lastNameErrorMsg")
     if(lastName.value.length == 0){
         error.textContent = "Veuillez saisir un nom"
@@ -267,7 +270,7 @@ lastName.addEventListener("input", (e) => {
 
 // Vérification de l'input de l'adresse
 const address = document.querySelector("#address")
-address.addEventListener("input", (e) => {
+address.addEventListener("input", () => {
     const error = document.querySelector("#addressErrorMsg")
     if(address.value.length < 10){
         error.textContent = "Veuillez saisir une adresse correcte"
@@ -280,7 +283,7 @@ address.addEventListener("input", (e) => {
 
 // Vérification de l'input de la ville
 const city = document.querySelector("#city")
-city.addEventListener("input", (e) => {
+city.addEventListener("input", () => {
     const error = document.querySelector("#cityErrorMsg")
     if(city.value.length == 0){
         error.textContent = "Veuillez saisir une ville"
@@ -293,9 +296,9 @@ city.addEventListener("input", (e) => {
 
 // Vérification de l'input de l'email
 const email = document.querySelector("#email")
-email.addEventListener("input", (e) => {
+email.addEventListener("input", () => {
     const error = document.querySelector("#emailErrorMsg")
-    if(email.value.length == 0){
+    if(email.value.length === 0){
         error.textContent = "Veuillez saisir une adresse mail"
     } else if(addressMail(email)){
         error.textContent = " "
@@ -336,15 +339,62 @@ function addressMail(inputTxt){
 // BOUTON COMMANDER !
 
 // Récupération et écoute du bouton
-// function getButton(){
-//     const orderButton = document.querySelector("#order")
-//     orderButton.addEventListener("click", verificationOfCart)
-// }
+function getCommandButton(){
+    const orderButton = document.querySelector("#order")
+    orderButton.addEventListener("click",() => submitCart())
+}
 
-// function verificationOfCart(){
+// Vérification de la présence d'un panier
+function submitCart(){
 
-// }
+    if(showProduct.length === 0){
+        alert("Votre panier est vide.")
+    }
+    getFormData()
+}   
 
+// Création de l'objet à envoyer a l'API
+function getFormData(){
+    const orderForm = document.querySelector(".cart__order__form")
+    const formElements = orderForm.elements
+    const body = {
+        contact : {
+            firstName : formElements.firstName.value,
+            lastName : formElements.lastName.value,
+            address : formElements.address.value,
+            city :formElements.city.value,
+            email : formElements.email.value
+        },
+        products: getIdFromStorage()
+    }
+    postRequestToAPI(body)
+}
 
-// getButton()
-getData()
+// Récupération de l'id des articles commandés
+function getIdFromStorage(){
+    const arrayFromId = []
+    
+    showProduct.forEach(product => {
+        const id = product.id
+        arrayFromId.push(id)
+    })
+    return arrayFromId
+}   
+
+function postRequestToAPI(body) {
+    fetch("http://localhost:3000/api/products/order", {
+        method : "POST",
+        headers : {
+            "Content-Type" : "application/json"
+        },
+        body : JSON.stringify(body)
+    })
+    .then((res) => res.json())
+    .then((data) => {
+        window.location.href = "./confirmation.html" + "?id=" + data.orderId
+    })
+    .catch(() => alert("il semblerait qu'il y ait un problème."))
+}
+
+getCommandButton()
+getDataFromStorage()
