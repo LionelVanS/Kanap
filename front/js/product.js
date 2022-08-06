@@ -3,7 +3,7 @@
 //Récupération des données de l'API
 fetch("http://localhost:3000/api/products/")
 .then((res) => res.json())
-.then((data) => getData(data))
+.then((data) => getDataFromStorage(data))
 .catch((e) => {
     window.alert("Il semblerait qu'il y ait un probleme")
 })
@@ -17,7 +17,7 @@ const url = new URLSearchParams(window.location.search)
 const currentId = url.get("id")
 
 // Récupération des informations du produit sélectionné
-function getData(data){
+function getDataFromStorage(data){
 
     for(let i = 0; i < data.length; i++){
         let id = data[i]._id
