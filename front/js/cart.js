@@ -12,7 +12,6 @@ function getDataFromStorage(){
         }
         getDataFromAPI(product, productFromStorage)
     }
-
 }
 
 // Récupération des données de l'API
@@ -32,7 +31,9 @@ function getDataFromAPI(product, productFromStorage){
     
     totalQuantityCart(showProduct)
     totalPriceCart(showProduct)
-    
+    })
+    .catch(() => {
+        alert("Il semblerait qu'il y ait un problème")
     })
 }
 // Création de l'article classe cart__item
@@ -167,8 +168,7 @@ function createDeleteButton(product, divSettings){
     divSettings.appendChild(divDelete)
     divDelete.appendChild(pDelete)
     
-    // keys = `${productToChange.id}:${productToChange.color}`
-    pDelete.addEventListener("click",() => deleteArticle(product) )
+    pDelete.addEventListener("click",() => deleteArticle(product))
 }
 
 // Calcul du total d'article
@@ -197,17 +197,17 @@ function totalPriceCart(showProduct){
     return totalPrice
 }
 
-
 // Modification des totaux d'articles et du prix
-function changeTotalPriceQuantity(id, newValue, color, unitPrice){
+function changeTotalPriceQuantity(id, newInputQuantityValue, color, unitPrice){
     const productToChange = showProduct.find((product) => product.id === id && product.color === color)
-    productToChange.quantity = Number(newValue)
+    productToChange.quantity = Number(newInputQuantityValue)
     productToChange.unitPrice = unitPrice
     
     newData(productToChange)
     totalQuantityCart()
     totalPriceCart(showProduct)
 }
+
 
 // Modification du localStorage avec les nouvelles quantités
 function newData(productToChange){
@@ -218,18 +218,21 @@ function newData(productToChange){
 
 // Suppression d'un article
 function deleteArticle(product){
+    // Suppression de l'article dans le tableau showProduct
     const id = product.id
     const color = product.color
     const productToDelete = showProduct.findIndex((productToDelete) => productToDelete.id === id && productToDelete.color === color)
     
     showProduct.splice(productToDelete, 1)
     
+    // Suppression du produit dans le localStorage
     const key = `${id}:${color}`
     localStorage.removeItem(key)
     
     deleteArticleFromDocument(id, color)
 }
 
+// Suppression du produit sur la page
 function deleteArticleFromDocument(id, color){
     const articleToDelete = document.querySelector(`article[data-id="${id}"][data-color="${color}"]`)
     articleToDelete.remove()
@@ -241,133 +244,130 @@ function deleteArticleFromDocument(id, color){
 // FORMULAIRE //
 
 // Vérification de l'input du prénom
-const firstName = document.querySelector("#firstName")
-firstName.addEventListener("input", (e) => {
+function isFirstNameIsValid(){
+    const firstName = document.querySelector("#firstName")
     const error = document.querySelector("#firstNameErrorMsg")
-    if(firstName.value.length == 0){
-        error.textContent = "Veuillez saisir un prénom"
-    } else if (firstName.value.length < 3){
-        error.textContent = "Veuillez saisir un prénom de plus de 3 lettres"
-    } else if(allLetter(firstName)){
-        error.textContent = " "
-    } else {
-        error.textContent = "Le champ ne peut contenir que des lettres et des espaces"
+    const regex = /^[a-zA-Z ]+$/
+
+        if (firstName.value.length < 3){
+            error.textContent = "Veuillez saisir un prénom de plus de 3 lettres"
+            return false
+        } else if(firstName.value.length === 0){
+            error.textContent = "Veuillez saisir un prénom"
+            return false
+        } else if(firstName.value.match(regex)){
+            error.textContent = " "
+            return true
+        } else {
+            error.textContent = "Le champ ne peut contenir que des lettres et des espaces"
+            return false
+        }
     }
-})
 
 // Vérification de l'input du nom
-const lastName = document.querySelector("#lastName")
-lastName.addEventListener("input", () => {
+function isLastNameIsValid(){
+    const lastName = document.querySelector("#lastName")
     const error = document.querySelector("#lastNameErrorMsg")
-    if(lastName.value.length == 0){
-        error.textContent = "Veuillez saisir un nom"
-    } else if(allLetter(lastName)){
-        error.textContent = " "
-    } else {
-        error.textContent = "Le champ ne peut contenir que des lettres et des espaces"
+    const regex = /^[a-zA-Z ]+$/
+
+        if(lastName.value.length == 0){
+            error.textContent = "Veuillez saisir un nom"
+            return false
+        } else if(lastName.value.match(regex)){
+            error.textContent = " "
+            return true
+        } else {
+            error.textContent = "Le champ ne peut contenir que des lettres et des espaces"
+            return false
     }
-})
+    }
 
 // Vérification de l'input de l'adresse
-const address = document.querySelector("#address")
-address.addEventListener("input", () => {
+function isAddressIsValid(){
+    const address = document.querySelector("#address")
     const error = document.querySelector("#addressErrorMsg")
-    if(address.value.length < 10){
-        error.textContent = "Veuillez saisir une adresse correcte"
-    } else if(lettersAndNumbers(address)) {
-        error.textContent = " "
-    } else {
-        error.textContent = "Le champ ne peut contenir que des lettres, des chiffres et des espaces"
+    const regex = /^[0-9]+ ([a-zA-Z, ]+)/
+
+        if(address.value.length < 10){
+            error.textContent = "Veuillez saisir une adresse correcte"
+            return false
+        } else if(address.value.match(regex)) {
+            error.textContent = " "
+            return true
+        } else {
+            error.textContent = "Le champ ne peut contenir que des lettres, des chiffres et des espaces"
+            return false
+        }
     }
-})
 
 // Vérification de l'input de la ville
-const city = document.querySelector("#city")
-city.addEventListener("input", () => {
+function isCityIsValid(){
+    const city = document.querySelector("#city")
     const error = document.querySelector("#cityErrorMsg")
-    if(city.value.length == 0){
-        error.textContent = "Veuillez saisir une ville"
-    } else if(allLetter(city)){
-        error.textContent = " "
-    } else {
-        error.textContent = "Le champ ne peut contenir que des lettres et des espaces"
+    const regex = /^[a-zA-Z ]+$/
+
+        if(city.value.length == 0){
+            error.textContent = "Veuillez saisir une ville"
+            return false
+        } else if(city.value.match(regex)){
+            error.textContent = " "
+            return true
+        } else {
+            error.textContent = "Le champ ne peut contenir que des lettres et des espaces"
+            return false
+        }
     }
-})
 
 // Vérification de l'input de l'email
-const email = document.querySelector("#email")
-email.addEventListener("input", () => {
+function isEmailIsValid(){
+    const email = document.querySelector("#email")
     const error = document.querySelector("#emailErrorMsg")
-    if(email.value.length === 0){
-        error.textContent = "Veuillez saisir une adresse mail"
-    } else if(addressMail(email)){
-        error.textContent = " "
-    } else {
+    const regex = /^[0-9a-zA-Z._-]+@{1}[a-zA-Z.-]{2,}[.]{1}[a-zA-Z]{2,5}$/
+
+        if(email.value.length === 0){
+            error.textContent = "Veuillez saisir une adresse mail"
+            return false
+        } else if(email.value.match(regex)){
+            error.textContent = " "
+            return true
+        } else {
         error.textContent = "Ceci n'est pas une adresse mail valide"
-    }
-})
-
-// Fonction pour vérifier si l'input ne comporte que des lettres (espaces autorisés)
-function allLetter(inputtxt){ 
-    const letters = /^[a-zA-Z ]+$/
-    if(inputtxt.value.match(letters)){
-        return true
-    } else {
         return false
+        }
     }
-}
-
-// Fonction pour vérifier si l'input ne comporte que des lettres et des chiffres (espaces autorisés)
-function lettersAndNumbers(inputtxt){
-    const numbersAndLetters = /^[0-9]* ([a-zA-Z, ]*)/
-    if(inputtxt.value.match(numbersAndLetters)){
-        return true
-    } else {
-        return false
-    }
-}
-
-function addressMail(inputTxt){
-    const addressMail = /^[0-9a-z._-]+@{1}[0-9a-z.-]{2,}[.]{1}[a-z]{2,5}$/
-    if(inputTxt.value.match(addressMail)){
-        return true
-    } else {
-        return false
-    }
-}
 
 // BOUTON COMMANDER !
 
 // Récupération et écoute du bouton
 function getCommandButton(){
     const orderButton = document.querySelector("#order")
-    orderButton.addEventListener("click",() => submitCart())
+    orderButton.addEventListener("click",() => getFormData())
 }
 
-// Vérification de la présence d'un panier
-function submitCart(){
-
-    if(showProduct.length === 0){
+// Création de l'objet à envoyer a l'API
+// En vérifiant les inputs et le panier
+function getFormData(){
+    if(showProduct.length !== 0){
+            if(isFirstNameIsValid() && isLastNameIsValid() && isAddressIsValid() && isCityIsValid() && isEmailIsValid()){ 
+                const orderForm = document.querySelector(".cart__order__form")
+                const formElements = orderForm.elements
+                const body = {
+                    contact : {
+                        firstName : formElements.firstName.value,
+                        lastName : formElements.lastName.value,
+                        address : formElements.address.value,
+                        city :formElements.city.value,
+                        email : formElements.email.value
+                    },
+                        products: getIdFromStorage()
+                }
+                postRequestToAPI(body)
+            } else {
+                alert("Il y a un problème au niveau du formulaire")
+            }
+    } else {
         alert("Votre panier est vide.")
     }
-    getFormData()
-}   
-
-// Création de l'objet à envoyer a l'API
-function getFormData(){
-    const orderForm = document.querySelector(".cart__order__form")
-    const formElements = orderForm.elements
-    const body = {
-        contact : {
-            firstName : formElements.firstName.value,
-            lastName : formElements.lastName.value,
-            address : formElements.address.value,
-            city :formElements.city.value,
-            email : formElements.email.value
-        },
-        products: getIdFromStorage()
-    }
-    postRequestToAPI(body)
 }
 
 // Récupération de l'id des articles commandés
@@ -382,18 +382,18 @@ function getIdFromStorage(){
 }   
 
 function postRequestToAPI(body) {
-    fetch("http://localhost:3000/api/products/order", {
-        method : "POST",
-        headers : {
-            "Content-Type" : "application/json"
-        },
-        body : JSON.stringify(body)
-    })
-    .then((res) => res.json())
-    .then((data) => {
-        window.location.href = "./confirmation.html" + "?id=" + data.orderId
-    })
-    .catch(() => alert("il semblerait qu'il y ait un problème."))
+        fetch("http://localhost:3000/api/products/order", {
+            method : "POST",
+            headers : {
+                "Content-Type" : "application/json"
+            },
+            body : JSON.stringify(body)
+        })
+        .then((res) => res.json())
+        .then((data) => {
+            window.location.href = "./confirmation.html" + "?id=" + data.orderId
+        })
+        .catch(() => alert("Il y a un soucis avec la base de donnée"))
 }
 
 getCommandButton()
