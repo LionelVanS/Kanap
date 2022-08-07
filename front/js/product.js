@@ -4,14 +4,10 @@
 fetch("http://localhost:3000/api/products/")
 .then((res) => res.json())
 .then((data) => getDataFromStorage(data))
-.catch((e) => {
+.catch(() => {
     window.alert("Il semblerait qu'il y ait un probleme")
 })
 
-// Message d'erreur
-function errorMessage(e){
-
-}
 // Récupération de l'id du produit sélectionné
 const url = new URLSearchParams(window.location.search)
 const currentId = url.get("id")
@@ -106,7 +102,7 @@ function addParams(){
 function saveParams(params, keys){    
     let dataFromStorage = JSON.parse(localStorage.getItem(keys))
     if(params.color != "" && params.quantity > 0){
-        window.location.href = "./cart.html"
+        alert("Votre article a été ajouté au panier")
         if(dataFromStorage != null && keys === `${dataFromStorage.id}:${dataFromStorage.color}`){
             let dataFromStorageNumber = parseInt(dataFromStorage.quantity, 10)
             let paramsQuantity = parseInt(params.quantity, 10)
