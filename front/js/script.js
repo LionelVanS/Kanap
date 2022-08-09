@@ -2,6 +2,7 @@
 fetch("http://localhost:3000/api/products")
     .then((res) => res.json())
     .then((data) => createProductsCard(data))
+    .catch(() => alert("La base de données est inaccessible"))
 
 // Création des cartes produits
 function createProductsCard(data){
@@ -14,10 +15,14 @@ function createProductsCard(data){
     const name = data[i].name
     const description = data[i].description
     
-    // Fabrique le squelette HTML des cartes
-    const anchor = createAnchor(id)
-    const article = createArticle(imageUrl, altTxt, name, description)
-    createStructureHtml(anchor, article)
+        // Fabrique le squelette HTML des cartes
+        if(data != null){
+            const anchor = createAnchor(id)
+            const article = createArticle(imageUrl, altTxt, name, description)
+            createStructureHtml(anchor, article)
+        } else {
+            alert("Il y a un soucis avec les produits")
+        }
     }
 }
 
