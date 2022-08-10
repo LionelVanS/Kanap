@@ -7,21 +7,24 @@ fetch("http://localhost:3000/api/products")
 // Création des cartes produits
 function createProductsCard(data){
     for (let i=0; i< data.length;i++){   
-
-    // Récupère les éléments de la carte pour chaque objet trouvé dans le tableau 
-    const id = data[i]._id
-    const imageUrl = data[i].imageUrl
-    const altTxt = data[i].altTxt
-    const name = data[i].name
-    const description = data[i].description
-    
-        // Fabrique le squelette HTML des cartes
-        if(data != null){
-            const anchor = createAnchor(id)
-            const article = createArticle(imageUrl, altTxt, name, description)
-            createStructureHtml(anchor, article)
-        } else {
-            alert("Il y a un soucis avec les produits")
+        try {
+            // Récupère les éléments de la carte pour chaque objet trouvé dans le tableau 
+            const id = data[i]._id
+            const imageUrl = data[i].imageUrl
+            const altTxt = data[i].altTxt
+            const name = data[i].name
+            const description = data[i].description
+            
+            // Fabrique le squelette HTML des cartes
+            if(data != null){
+                const anchor = createAnchor(id)
+                const article = createArticle(imageUrl, altTxt, name, description)
+                createStructureHtml(anchor, article)
+            } else {
+                alert("Impossible de créer l'article")
+            }
+        } catch {
+            alert("Impossible d'afficher les produits")
         }
     }
 }

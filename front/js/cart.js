@@ -4,13 +4,17 @@ const showProduct = []
 function getDataFromStorage(){
     const numberOfProduct = localStorage.length
     for(let i=0; i < numberOfProduct ;i++){
-        const productFromStorage = JSON.parse(localStorage.getItem(localStorage.key(i)))
-        const product = {
-            quantity: productFromStorage.quantity,
-            color: productFromStorage.color,
-            id: productFromStorage.id,
+        try {
+            const productFromStorage = JSON.parse(localStorage.getItem(localStorage.key(i)))
+            const product = {
+                quantity: productFromStorage.quantity,
+                color: productFromStorage.color,
+                id: productFromStorage.id,
+            }
+            getDataFromAPI(product, productFromStorage)
+        } catch {
+            alert("Nous n'avons pas pu récupérer votre panier.")
         }
-        getDataFromAPI(product, productFromStorage)
     }
 }
 
@@ -26,14 +30,18 @@ function getDataFromAPI(product, productFromStorage){
     product.name = data.name
     
     showProduct.push(product)
-    
-    createArticle(product)
+
+    try {
+        createArticle(product)
+    } catch {
+        alert("Nous n'avons pas pu créer la liste de vos articles")
+    }
     
     totalQuantityCart(showProduct)
     totalPriceCart(showProduct)
     })
     .catch(() => {
-        alert("Il semblerait qu'il y ait un problème")
+        alert("Il semblerait qu'il y ai un problème")
     })
 }
 // Création de l'article classe cart__item
@@ -173,44 +181,54 @@ function createDeleteButton(product, divSettings){
 
 // Calcul du total d'article
 function totalQuantityCart(){
-    let total = 0;
+    let total = 0
     
-    showProduct.forEach(product => {
-        const totalUnitQuantity = parseFloat(product.quantity)
-        total += totalUnitQuantity 
-    })
-    
-    document.querySelector("#totalQuantity").textContent = total
+    if(showProduct != null){
+        showProduct.forEach(product => {
+            const totalUnitQuantity = parseFloat(product.quantity)
+            total += totalUnitQuantity 
+        })
+        document.querySelector("#totalQuantity").textContent = total
+    } else {
+        alert("Il n'y a pas d'articles dans votre panier")
+    }
 }
 
 // Calcul du prix total
 function totalPriceCart(showProduct){
-    let totalPrice = 0;
-    
-    showProduct.forEach(product => {
-        const totalUnitPrice = product.unitPrice * product.quantity
-        totalPrice += totalUnitPrice
-    }) 
-   
-    document.querySelector("#totalPrice").textContent = totalPrice
+    let totalPrice = 0
 
-    return totalPrice
+    if(showProduct != null){
+            showProduct.forEach(product => {
+            const totalUnitPrice = product.unitPrice * product.quantity
+            totalPrice += totalUnitPrice
+        }) 
+        
+        document.querySelector("#totalPrice").textContent = totalPrice
+        return totalPrice
+    } else {
+    alert("Il n'y a pas d'articles dans votre panier")
+    }
 }
 
 // Modification des totaux d'articles et du prix
 function changeTotalPriceQuantity(id, newInputQuantityValue, color, unitPrice){
-    const productToChange = showProduct.find((product) => product.id === id && product.color === color)
-    productToChange.quantity = Number(newInputQuantityValue)
-    productToChange.unitPrice = unitPrice
-    
-    newData(productToChange)
-    totalQuantityCart()
-    totalPriceCart(showProduct)
+    if(showProduct != null){
+        const productToChange = showProduct.find((product) => product.id === id && product.color === color)
+        productToChange.quantity = Number(newInputQuantityValue)
+        productToChange.unitPrice = unitPrice
+        
+        saveNewDataToStorage(productToChange)
+        totalQuantityCart()
+        totalPriceCart(showProduct)
+    } else {
+        alert("Il n'y a pas d'articles dans votre panier")
+    }
 }
 
 
 // Modification du localStorage avec les nouvelles quantités
-function newData(productToChange){
+function saveNewDataToStorage(productToChange){
     const keys = `${productToChange.id}:${productToChange.color}`
     const newDataToSave = JSON.stringify(productToChange)
     localStorage.setItem(keys, newDataToSave)    
@@ -218,28 +236,30 @@ function newData(productToChange){
 
 // Suppression d'un article
 function deleteArticle(product){
-    // Suppression de l'article dans le tableau showProduct
-    const id = product.id
-    const color = product.color
-    const productToDelete = showProduct.findIndex((productToDelete) => productToDelete.id === id && productToDelete.color === color)
-    
-    showProduct.splice(productToDelete, 1)
-    
-    // Suppression du produit dans le localStorage
-    const key = `${id}:${color}`
-    localStorage.removeItem(key)
-    
-    deleteArticleFromDocument(id, color)
+    try{
+        // Suppression de l'article dans le tableau showProduct
+        const id = product.id
+        const color = product.color
+        const productToDelete = showProduct.findIndex((productToDelete) => productToDelete.id === id && productToDelete.color === color)
+        
+        showProduct.splice(productToDelete, 1)
+        
+        // Suppression du produit dans le localStorage
+        const key = `${id}:${color}`
+        localStorage.removeItem(key)
+        
+        // Suppression du produit sur la page
+        const articleToDelete = document.querySelector(`article[data-id="${id}"][data-color="${color}"]`)
+        articleToDelete.remove()
+    } catch {
+        alert("Impossible de supprimer l'article.")
+    }
+    2
+    // Modification des totaux
+    totalPriceCart(showProduct)
+    totalQuantityCart()
 }
 
-// Suppression du produit sur la page
-function deleteArticleFromDocument(id, color){
-    const articleToDelete = document.querySelector(`article[data-id="${id}"][data-color="${color}"]`)
-    articleToDelete.remove()
-    
-    totalQuantityCart()
-    totalPriceCart(showProduct)
-}
 
 // FORMULAIRE //
 
@@ -337,16 +357,15 @@ function isEmailIsValid(){
     }
 
 // BOUTON COMMANDER !
-
 // Récupération et écoute du bouton
 function getCommandButton(){
     const orderButton = document.querySelector("#order")
-    orderButton.addEventListener("click",() => getFormData())
+    orderButton.addEventListener("click",() => createOrderData())
 }
 
 // Création de l'objet à envoyer a l'API
 // En vérifiant les inputs et le panier
-function getFormData(){
+function createOrderData(){
     if(showProduct.length !== 0){
             if(isFirstNameIsValid() && isLastNameIsValid() && isAddressIsValid() && isCityIsValid() && isEmailIsValid()){ 
                 const orderForm = document.querySelector(".cart__order__form")
@@ -381,7 +400,9 @@ function getIdFromStorage(){
     return arrayFromId
 }   
 
+// Requête POST pour transmettre l'objet à l'API
 function postRequestToAPI(body) {
+    if(body != null){
         fetch("http://localhost:3000/api/products/order", {
             method : "POST",
             headers : {
@@ -394,6 +415,9 @@ function postRequestToAPI(body) {
             window.location.href = "./confirmation.html" + "?id=" + data.orderId
         })
         .catch(() => alert("Il y a un soucis avec la base de donnée"))
+    } else {
+        alert("Il y a un problème")
+    }
 }
 
 getCommandButton()
