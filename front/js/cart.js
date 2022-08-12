@@ -1,4 +1,5 @@
-const showProduct = []
+const listOfProduct = []
+
 
 // Récupération des données du local storage
 function getDataFromStorage(){
@@ -26,10 +27,10 @@ function getDataFromAPI(product, productFromStorage){
         
     product.image = data.imageUrl,
     product.altTxt = data.altTxt,
-    product.unitPrice = data.price
+    product.unitPrice = data.price,
     product.name = data.name
     
-    showProduct.push(product)
+    listOfProduct.push(product)
 
     try {
         createArticle(product)
@@ -37,13 +38,14 @@ function getDataFromAPI(product, productFromStorage){
         alert("Nous n'avons pas pu créer la liste de vos articles")
     }
     
-    totalQuantityCart(showProduct)
-    totalPriceCart(showProduct)
+    totalQuantityCart(listOfProduct)
+    totalPriceCart(listOfProduct)
     })
     .catch(() => {
         alert("Il semblerait qu'il y ai un problème")
     })
 }
+
 // Création de l'article classe cart__item
 function createArticle(product){
     const articleCartItem = document.createElement("article")
@@ -183,8 +185,8 @@ function createDeleteButton(product, divSettings){
 function totalQuantityCart(){
     let total = 0
     
-    if(showProduct != null){
-        showProduct.forEach(product => {
+    if(listOfProduct != null){
+        listOfProduct.forEach(product => {
             const totalUnitQuantity = parseFloat(product.quantity)
             total += totalUnitQuantity 
         })
@@ -213,14 +215,14 @@ function totalPriceCart(showProduct){
 
 // Modification des totaux d'articles et du prix
 function changeTotalPriceQuantity(id, newInputQuantityValue, color, unitPrice){
-    if(showProduct != null){
-        const productToChange = showProduct.find((product) => product.id === id && product.color === color)
+    if(listOfProduct != null){
+        const productToChange = listOfProduct.find((product) => product.id === id && product.color === color)
         productToChange.quantity = Number(newInputQuantityValue)
         productToChange.unitPrice = unitPrice
         
         saveNewDataToStorage(productToChange)
         totalQuantityCart()
-        totalPriceCart(showProduct)
+        totalPriceCart(listOfProduct)
     } else {
         alert("Il n'y a pas d'articles dans votre panier")
     }
@@ -240,9 +242,9 @@ function deleteArticle(product){
         // Suppression de l'article dans le tableau showProduct
         const id = product.id
         const color = product.color
-        const productToDelete = showProduct.findIndex((productToDelete) => productToDelete.id === id && productToDelete.color === color)
+        const productToDelete = listOfProduct.findIndex((productToDelete) => productToDelete.id === id && productToDelete.color === color)
         
-        showProduct.splice(productToDelete, 1)
+        listOfProduct.splice(productToDelete, 1)
         
         // Suppression du produit dans le localStorage
         const key = `${id}:${color}`
@@ -254,53 +256,46 @@ function deleteArticle(product){
     } catch {
         alert("Impossible de supprimer l'article.")
     }
-    2
+    
     // Modification des totaux
-    totalPriceCart(showProduct)
+    totalPriceCart(listOfProduct)
     totalQuantityCart()
 }
 
+// Function de vérification des inputs contenant que des lettres
+function checkIfInputContainOnlyLetters(input, errorInput){
+    const regexAllLetters = /^[a-zA-Z, ]+$/
 
-// FORMULAIRE //
+    if(input.value.length === 0){
+        errorInput.textContent = "Cette ligne ne peut pas rester vide"
+        return false
+    } else if(input.value.length < 3){
+        errorInput.textContent = "Cette ligne ne peut pas contenir moins de 3 lettres"
+        return false
+    } else if(input.value.match(regexAllLetters)){
+        errorInput.textContent = " "
+        return true
+    } else {
+        errorInput.textContent = "Cette ligne ne peut contenir que des lettres et des espaces"
+        return false
+    }
+}
 
 // Vérification de l'input du prénom
 function isFirstNameIsValid(){
-    const firstName = document.querySelector("#firstName")
-    const error = document.querySelector("#firstNameErrorMsg")
-    const regex = /^[a-zA-Z ]+$/
-
-        if (firstName.value.length < 3){
-            error.textContent = "Veuillez saisir un prénom de plus de 3 lettres"
-            return false
-        } else if(firstName.value.length === 0){
-            error.textContent = "Veuillez saisir un prénom"
-            return false
-        } else if(firstName.value.match(regex)){
-            error.textContent = " "
-            return true
-        } else {
-            error.textContent = "Le champ ne peut contenir que des lettres et des espaces"
-            return false
-        }
-    }
+    const input = document.querySelector("#firstName")
+    const errorInput = document.querySelector("#firstNameErrorMsg")
+    
+    return checkIfInputContainOnlyLetters(input, errorInput)
+}
 
 // Vérification de l'input du nom
 function isLastNameIsValid(){
-    const lastName = document.querySelector("#lastName")
-    const error = document.querySelector("#lastNameErrorMsg")
-    const regex = /^[a-zA-Z ]+$/
+    const input = document.querySelector("#lastName")
+    const errorInput = document.querySelector("#lastNameErrorMsg")
 
-        if(lastName.value.length == 0){
-            error.textContent = "Veuillez saisir un nom"
-            return false
-        } else if(lastName.value.match(regex)){
-            error.textContent = " "
-            return true
-        } else {
-            error.textContent = "Le champ ne peut contenir que des lettres et des espaces"
-            return false
-    }
-    }
+    return checkIfInputContainOnlyLetters(input, errorInput)
+}
 
 // Vérification de l'input de l'adresse
 function isAddressIsValid(){
@@ -308,35 +303,29 @@ function isAddressIsValid(){
     const error = document.querySelector("#addressErrorMsg")
     const regex = /^[0-9]+ ([a-zA-Z, ]+)/
 
-        if(address.value.length < 10){
-            error.textContent = "Veuillez saisir une adresse correcte"
-            return false
-        } else if(address.value.match(regex)) {
-            error.textContent = " "
-            return true
-        } else {
-            error.textContent = "Le champ ne peut contenir que des lettres, des chiffres et des espaces"
-            return false
-        }
+    if(address.value.length === 0){
+        error.textContent = "Cette ligne ne peut pas rester vide"
+        return false
+    } else if (address.value.length < 10){
+        error.textContent = "Ceci n'est pas une adresse valide"
+        return false
+    } else if(address.value.match(regex)){
+        error.textContent = " "
+        return true
+    } else {
+        error.textContent = "Ceci n'est pas une adresse valide"
+        return false
     }
+}
 
 // Vérification de l'input de la ville
 function isCityIsValid(){
-    const city = document.querySelector("#city")
-    const error = document.querySelector("#cityErrorMsg")
-    const regex = /^[a-zA-Z ]+$/
+    const input = document.querySelector("#city")
+    const errorInput = document.querySelector("#cityErrorMsg")
 
-        if(city.value.length == 0){
-            error.textContent = "Veuillez saisir une ville"
-            return false
-        } else if(city.value.match(regex)){
-            error.textContent = " "
-            return true
-        } else {
-            error.textContent = "Le champ ne peut contenir que des lettres et des espaces"
-            return false
-        }
-    }
+    return checkIfInputContainOnlyLetters(input, errorInput)
+     
+}
 
 // Vérification de l'input de l'email
 function isEmailIsValid(){
@@ -345,29 +334,41 @@ function isEmailIsValid(){
     const regex = /^[0-9a-zA-Z._-]+@{1}[a-zA-Z.-]{2,}[.]{1}[a-zA-Z]{2,5}$/
 
         if(email.value.length === 0){
-            error.textContent = "Veuillez saisir une adresse mail"
+            error.textContent = "Cette ligne ne peut pas rester vide"
             return false
         } else if(email.value.match(regex)){
             error.textContent = " "
             return true
         } else {
-        error.textContent = "Ceci n'est pas une adresse mail valide"
-        return false
+            error.textContent = "Ceci n'est pas une adresse mail valide"
+            return false
         }
     }
+    
+function checkInputs(){
+    let isValid = true
+    isValid &= isFirstNameIsValid() 
+    isValid &= isLastNameIsValid()
+    isValid &= isAddressIsValid()
+    isValid &= isCityIsValid()
+    isValid &= isEmailIsValid()
+    return isValid
+}
 
 // BOUTON COMMANDER !
 // Récupération et écoute du bouton
 function getCommandButton(){
     const orderButton = document.querySelector("#order")
-    orderButton.addEventListener("click",() => createOrderData())
+    orderButton.addEventListener("click",(e) => createOrderData(e))
 }
 
+
 // Création de l'objet à envoyer a l'API
-// En vérifiant les inputs et le panier
-function createOrderData(){
-    if(showProduct.length !== 0){
-            if(isFirstNameIsValid() && isLastNameIsValid() && isAddressIsValid() && isCityIsValid() && isEmailIsValid()){ 
+// En vérifiant le formulaire et le panier
+function createOrderData(e){
+    if(listOfProduct.length !== 0){
+            if(checkInputs() === 1){ 
+                e.preventDefault()
                 const orderForm = document.querySelector(".cart__order__form")
                 const formElements = orderForm.elements
                 const body = {
@@ -381,19 +382,19 @@ function createOrderData(){
                         products: getIdFromStorage()
                 }
                 postRequestToAPI(body)
-            } else {
-                alert("Il y a un problème au niveau du formulaire")
             }
+
     } else {
         alert("Votre panier est vide.")
     }
 }
 
+
 // Récupération de l'id des articles commandés
 function getIdFromStorage(){
     const arrayFromId = []
     
-    showProduct.forEach(product => {
+    listOfProduct.forEach(product => {
         const id = product.id
         arrayFromId.push(id)
     })
@@ -422,3 +423,7 @@ function postRequestToAPI(body) {
 
 getCommandButton()
 getDataFromStorage()
+
+
+
+
