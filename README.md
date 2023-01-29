@@ -4,9 +4,9 @@ Projet 5 - Construisez un site e-commerce en Javascript
 
 ### Objectifs:
 
-- Construire une API avec NodeJS et express.
-- Créer une base de données NoSQL avec MongoDB Atlas.
-- Appliquer les techniques de sécurisation d'une base de données.
+- Apprendre à coder avec Javascript.
+- Déboguer l'interface d'un site.
+- Ecrire du Javascript pour le web (utilisation du DOM, des fetchs et créer des requêtes HTTP)
 
 ## Pour commencer
 
